@@ -14,7 +14,7 @@ from sklearn.metrics import mean_absolute_error as mae
 
 from xgboost import XGBRegressor
 
-from get_data import fix_missing_data
+from get_data import *
 # from sklearn.linear_model.
 
 def build_model(num_classes, input_shape, C=0.1):
@@ -37,21 +37,15 @@ def build_model(num_classes, input_shape, C=0.1):
     model_tanh = Sequential([
         keras.layers.Dense(32, activation='relu', input_shape=input_shape, kernel_regularizer=regularizer),
         keras.layers.BatchNormalization(),
-        keras.layers.Dropout(0.1),
         keras.layers.Dense(64, activation='relu', kernel_regularizer=regularizer),
         keras.layers.BatchNormalization(),
-        keras.layers.Dropout(0.2),
-        keras.layers.Dense(128, activation='relu', kernel_regularizer=regularizer),
-        keras.layers.BatchNormalization(),
-        keras.layers.Dropout(0.3),
         keras.layers.Dense(32, activation='relu', kernel_regularizer=regularizer),
         keras.layers.BatchNormalization(),
-        keras.layers.Dropout(0.2),
         keras.layers.Dense(1, activation='linear')
     ])
 
     model_tanh.compile(
-        optimizer=keras.optimizers.legacy.Adam(learning_rate=0.0001), 
+        optimizer=keras.optimizers.legacy.Adam(learning_rate=0.00024), 
         # optimizer='adam',
         # loss=keras.losses.sparse_categorical_crossentropy, 
         loss=keras.losses.mae,
@@ -190,9 +184,9 @@ def cross_validation(x, y, C, batch_size, epochs, num_classes, input_shape):
 
 
 def make_prediction(model):
-    fix_missing_data('test')
+    fix_missing_data_test('test')
 
-    x = pd.read_csv('imputed_test.csv').to_numpy()
+    x = pd.read_csv('evil_imputed_test.csv').to_numpy()
 
     base_id = 17170
     predictions = model.predict(x)
@@ -201,15 +195,16 @@ def make_prediction(model):
 
     df = pd.DataFrame(predictions, columns=['id', 'Danceability'])
     df.to_csv('predictions.csv', index=False)
+    print(df.head(10))
     print('successfully saved to predictions.csv')
 
 
 
 if __name__ == '__main__':
 
-    fix_missing_data('train')
+    fix_missing_data_train('train')
 
-    x = pd.read_csv('imputed_train.csv')
+    x = pd.read_csv('evil_imputed_train.csv')
     x_train, x_test = train_test_split(x, test_size=0.2, random_state=1126)
     # x_train['Stream'] = x_train['Stream'].apply(lambda x: np.log(x))
 
